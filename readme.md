@@ -12,7 +12,7 @@ A [magic_enum](https://github.com/Neargye/magic_enum.git)-like static reflection
 
 ## [r2](r2/r2.cpp)
 
-The simplest lisp interpreter inspired by [怎样写一个解释器](http://www.yinwang.org/blog-cn/2012/08/01/interpreter) but implemented with  C++ template metaprogramming.
+The simplest lisp interpreter inspired by [怎样写一个解释器](http://www.yinwang.org/blog-cn/2012/08/01/interpreter) but implemented with C++ template metaprogramming.
 
 ```cpp
 // (let ([x 2])
@@ -25,5 +25,18 @@ The simplest lisp interpreter inspired by [怎样写一个解释器](http://www.
                 _(let, _(S('x'), N(4)),
                     _(S('f'), N(3)))))
     );
-// => Numb(6)
+// => Numb<6>
+```
+
+## [r2_v2](r2/r2_v2.cpp)
+
+The simplest lisp interpreter inspired by [怎样写一个解释器](http://www.yinwang.org/blog-cn/2012/08/01/interpreter) but implemented with C++ template metaprogramming. Allow you to write codes like this:
+
+```cpp
+// (let ([x 2])
+//   (let ([f (lambda (y) (* x y))])
+//     (let ([x 4])
+//       (f 3))))
+    using res = R2("(let (x 2) (let (f (lambda (y) (* x y))) (let (x 4) (f 3))))");
+// => Number<6>
 ```
