@@ -92,10 +92,10 @@ template <> struct quicksort<list<>>
 template <int x, int ...xs> struct quicksort<list<x, xs...>>
 {
     template <int lhs>
-    using lep = typename le<x>::value<lhs>;
+    using lep = typename le<x>::template value<lhs>;
     
     template <int lhs>
-    using gtp = typename gt<x>::value<lhs>;
+    using gtp = typename gt<x>::template value<lhs>;
     
     using value = typename concat<
         typename quicksort<typename filter<lep, list<xs...>>::value>::value,
