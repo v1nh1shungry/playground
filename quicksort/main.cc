@@ -1,120 +1,37 @@
-#include <iostream>
-#include <algorithm>
-#include <iterator>
+#include <type_traits>
+#include <utility>
 
-// []
-template <int...> struct list {};
+template <class Left, class Right> struct merge;
+template <auto... Ls, auto... Rs>
+struct merge<std::index_sequence<Ls...>, std::index_sequence<Rs...>>
+    : std::type_identity<std::index_sequence<Ls..., Rs...>> {};
 
-// (if cond conseq alt)
-// in C++,
-// if (cond) {
-//     return conseq;
-// } else {
-//     return alt;
-// }
-template <bool cond, class conseq, class alt>
-struct _if;
-template <class conseq, class alt>
-struct _if<true, conseq, alt>
-{
-    using value = conseq;
-};
-template <class conseq, class alt>
-struct _if<false, conseq, alt>
-{
-    using value = alt;
-};
+template <template <auto> class F, class Seq> struct filter;
+template <template <auto> class F>
+struct filter<F, std::index_sequence<>>
+    : std::type_identity<std::index_sequence<>> {};
+template <template <auto> class F, auto Head, auto... Tail>
+struct filter<F, std::index_sequence<Head, Tail...>>
+    : merge<std::conditional_t<F<Head>::value, std::index_sequence<Head>,
+                               std::index_sequence<>>,
+            typename filter<F, std::index_sequence<Tail...>>::type> {};
 
-template <class l, class m, class r> struct concat;
-template <int ...l, int ...m, int ...r>
-struct concat<list<l...>, list<m...>, list<r...>>
-{
-    using value = list<l..., m..., r...>;
-};
-
-// filter::(a -> Bool) -> [a] -> [a]
-// filter _ [] = []
-// filter f [x:xs] = 
-//     | f x = x : filter f xs
-//     | otherwise = filter f xs
-template <template <int P> class F, class L> struct filter;
-template <template <int P> class F> struct filter<F, list<>>
-{
-    using value = list<>;
-};
-template <template <int P> class F, int x, int ...xs>
-struct filter<F, list<x, xs...>>
-{
-    using value = typename concat<list<>, 
-    	typename _if<F<x>::value, list<x>, list<>>::value,
-    	typename filter<F, list<xs...>>::value>::value;
+template <class Seq> struct quick_sort;
+template <>
+struct quick_sort<std::index_sequence<>>
+    : std::type_identity<std::index_sequence<>> {};
+template <auto Head, auto... Tail>
+struct quick_sort<std::index_sequence<Head, Tail...>> {
+  template <auto N> using less_equal = std::bool_constant<(N <= Head)>;
+  template <auto N> using greater_than = std::bool_constant<(N > Head)>;
+  using type = typename merge<
+      typename quick_sort<typename filter<
+          less_equal, std::index_sequence<Tail...>>::type>::type,
+      typename merge<
+          std::index_sequence<Head>,
+          typename filter<greater_than,
+                          std::index_sequence<Tail...>>::type>::type>::type;
 };
 
-// less or equal (<=)
-template <int rhs>
-struct le
-{
-    template <int lhs>
-    struct le_partial
-    {
-        static constexpr bool value = lhs <= rhs;
-    };
-    
-    template <int lhs>
-    using value = le_partial<lhs>;
-};
-
-// greater than (>)
-template <int rhs>
-struct gt
-{
-    template <int lhs>
-    struct gt_partial
-    {
-        static constexpr bool value = lhs > rhs;
-    };
-    
-    template <int lhs>
-    using value = gt_partial<lhs>;
-};
-
-// quicksort::(Ord a) => [a] -> [a]
-// quicksort [] = []
-// quicksort [x:xs] = 
-//     let smaller = quicksort (filter (<= x) xs)
-//     let larger = quicksort (filter (> x) xs)
-//     in smaller ++ [x] ++ larger
-template <class L> struct quicksort;
-template <> struct quicksort<list<>>
-{
-    using value = list<>;
-};
-template <int x, int ...xs> struct quicksort<list<x, xs...>>
-{
-    template <int lhs>
-    using lep = typename le<x>::template value<lhs>;
-    
-    template <int lhs>
-    using gtp = typename gt<x>::template value<lhs>;
-    
-    using value = typename concat<
-        typename quicksort<typename filter<lep, list<xs...>>::value>::value,
-    	list<x>,
-    	typename quicksort<typename filter<gtp, list<xs...>>::value>::value
-        >::value;
-};
-
-template <int ...vals>
-void print(list<vals...>)
-{
-    static constexpr int values[] = { vals... };
-    std::copy(std::begin(values), std::end(values), std::ostream_iterator<int>(std::cout, " "));
-    std::endl(std::cout);
-}
-
-int main()
-{
-	using result = typename quicksort<list<2, 1, 0, 7, 3, 1, -2, 4>>::value;
-    print(result());
-    return 0;
-}
+using example = quick_sort<std::index_sequence<3, 2, 1, 4>>::type;
+// std::index_sequence<1, 2, 3, 4>
