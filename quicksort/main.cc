@@ -1,4 +1,3 @@
-#include <type_traits>
 #include <utility>
 
 template <class Left, class Right> struct merge;
@@ -33,5 +32,4 @@ struct quick_sort<std::index_sequence<Head, Tail...>> {
                           std::index_sequence<Tail...>>::type>::type>::type;
 };
 
-using example = quick_sort<std::index_sequence<3, 2, 1, 4>>::type;
-// std::index_sequence<1, 2, 3, 4>
+static_assert(std::is_same_v<quick_sort<std::index_sequence<3, 2, 1, 4>>::type, std::index_sequence<1, 2, 3, 4>>);
