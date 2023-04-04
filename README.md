@@ -36,3 +36,12 @@ The simplest lisp interpreter inspired by [怎样写一个解释器](http://www.
     using res = R2("(let (x 2) (let (f (lambda (y) (* x y))) (let (x 4) (f 3))))");
 // => Number<6>
 ```
+
+## [my::\*](my/)
+
+The literally friendly and modern enough implementation of few STL ultilities.
+**No, they're just jokes. Don't take them seriously.**
+
+* any
+* shared_ptr
+* string
