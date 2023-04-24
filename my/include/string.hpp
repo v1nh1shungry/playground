@@ -90,7 +90,7 @@ public:
   }
   void pop_back() {
     if (m_size == 0)
-      throw std::runtime_error{"my::string::pop_back(): out of range"};
+      throw std::out_of_range{"my::string::pop_back(): empty string"};
     m_size -= 1;
     if (m_buffer_size == SSO_BUFFER_SIZE)
       m_sso_buffer[m_size] = '\0';
